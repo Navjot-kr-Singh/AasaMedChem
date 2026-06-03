@@ -1,6 +1,5 @@
 import React from "react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { 
   ShieldCheck, 
@@ -15,17 +14,13 @@ import {
 
 export default async function LandingPage() {
   const session = await auth();
+  const user = session?.user as any;
+  const role = user?.role;
   
-  if (session?.user) {
-    const role = (session.user as any).role;
-    if (role === "admin") {
-      redirect("/admin/dashboard");
-    } else if (role === "seller") {
-      redirect("/seller/dashboard");
-    } else if (role === "buyer") {
-      redirect("/buyer/dashboard");
-    }
-  }
+  const dashboardHref = 
+    role === "admin" ? "/admin/dashboard" :
+    role === "seller" ? "/seller/dashboard" :
+    role === "buyer" ? "/buyer/dashboard" : null;
 
   return (
     <div className="bg-slate-50 min-h-screen flex flex-col font-sans">
@@ -40,18 +35,35 @@ export default async function LandingPage() {
           </div>
 
           <div className="flex items-center gap-4">
-            <Link 
-              href="/login" 
-              className="text-sm font-semibold text-slate-600 hover:text-indigo-600 transition-colors"
-            >
-              Sign In
-            </Link>
-            <Link 
-              href="/register" 
-              className="text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm px-4 py-2 rounded-lg transition-all"
-            >
-              Register Portal
-            </Link>
+            {dashboardHref ? (
+              <>
+                <span className="text-sm text-slate-500">
+                  Hi, <span className="font-semibold text-slate-800">{user?.name?.split(" ")[0]}</span>
+                </span>
+                <Link 
+                  href={dashboardHref}
+                  className="text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm px-4 py-2 rounded-lg transition-all flex items-center gap-2"
+                >
+                  Go to Dashboard
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link 
+                  href="/login" 
+                  className="text-sm font-semibold text-slate-600 hover:text-indigo-600 transition-colors"
+                >
+                  Sign In
+                </Link>
+                <Link 
+                  href="/register" 
+                  className="text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm px-4 py-2 rounded-lg transition-all"
+                >
+                  Register Portal
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>

@@ -15,7 +15,9 @@ import {
   Building, 
   Lock,
   ChevronRight,
-  UserCheck
+  UserCheck,
+  Home,
+  ExternalLink
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -116,6 +118,18 @@ export function Sidebar() {
           );
         })}
       </nav>
+
+      {/* Landing Page Quick Link */}
+      <div className="px-4 pb-3">
+        <Link
+          href="/"
+          className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-100 hover:border-indigo-200 transition-all duration-200 group w-full"
+        >
+          <Home className="w-4 h-4 shrink-0 text-indigo-500" />
+          <span className="flex-1">Visit Landing Page</span>
+          <ExternalLink className="w-3.5 h-3.5 text-indigo-400 group-hover:text-indigo-600 transition-colors" />
+        </Link>
+      </div>
 
       {/* User Information Summary Card */}
       <div className="p-4 border-t border-slate-100 bg-slate-50/50">
