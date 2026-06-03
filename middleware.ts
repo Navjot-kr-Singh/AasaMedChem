@@ -3,13 +3,35 @@ import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
 export async function middleware(req: NextRequest) {
-  // Retrieve token from request cookies. 
-  // Under production (https), Vercel/NextAuth prefixes cookie with __Secure-
-  const token = await getToken({ 
+  const isProd = process.env.NODE_ENV === "production" || req.headers.get("x-forwarded-proto") === "https";
+  
+  // 1. Try default next-auth token resolution
+  let token = await getToken({ 
     req, 
     secret: process.env.NEXTAUTH_SECRET,
-    // Add raw cookie name lookup fallback if next-auth fails to auto-resolve cookie name
+    secureCookie: isProd,
   });
+
+  // 2. Try explicit Auth.js v5 cookie name lookup (authjs.session-token)
+  if (!token) {
+    const v5CookieName = isProd ? "__Secure-authjs.session-token" : "authjs.session-token";
+    token = await getToken({
+      req,
+      secret: process.env.NEXTAUTH_SECRET,
+      cookieName: v5CookieName,
+      secureCookie: isProd,
+    });
+  }
+
+  // 3. Try insecure Auth.js v5 name as fallback (in case proxy SSL termination hides secure protocol)
+  if (!token && isProd) {
+    token = await getToken({
+      req,
+      secret: process.env.NEXTAUTH_SECRET,
+      cookieName: "authjs.session-token",
+      secureCookie: false,
+    });
+  }
   
   const isLoggedIn = !!token;
   const role = token?.role;
